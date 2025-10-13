@@ -37,6 +37,64 @@
 .nav a.active {
   border-bottom: 2px solid white;
 }
+.home-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #0077ff;
+}
+
+.hero h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.hero p {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.hero-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn {
+  background: #0077ff;
+  color: white;
+  padding: 0.7rem 1.5rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.btn:hover {
+  background: #005fcc;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid #0077ff;
+  color: #0077ff;
+}
+
+.btn-outline:hover {
+  background: #0077ff;
+  color: white;
+}
 .contact-page {
   max-width: 600px;
   margin: 2rem auto;
