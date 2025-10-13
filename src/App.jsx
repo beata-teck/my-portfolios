@@ -23,4 +23,4 @@ export default function App() {
   </>
   );
 }
-export { Contact, About, Projects, Header, Footer, ProjectCard, NotFound };
+export { Contact, About, Projects, Header, Footer, ProjectCard, NotFound , AboutSection, ContactForm };
