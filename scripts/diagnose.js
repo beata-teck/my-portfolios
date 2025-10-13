@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const child = require('child_process');
+const http = require('http');
 
 const root = path.resolve(__dirname, '..');
 
@@ -28,68 +30,105 @@ function readJSON(p) {
   catch (e) { return null; }
 }
 
-console.log('Project diagnostics for:', root);
-console.log('----------------------------------------------------');
-
-// File tree summary (top-level and few nested)
-const all = listAll(root);
-console.log('Total files/folders discovered:', all.length);
-console.log('Top 50 entries (relative to project root):');
-all.slice(0, 50).forEach((f) => console.log('  -', f));
-if (all.length > 50) console.log('  ... (truncated)');
-
-console.log('\nChecks:');
-const pj = readJSON('package.json');
-if (!pj) {
-  console.warn('package.json: NOT FOUND. This is required to detect scripts/dependencies. If missing, create one with npm init or ensure you are in the project root.');
-} else {
-  console.log('package.json found. Scripts snapshot:');
-  console.log('  scripts:', pj.scripts ? Object.keys(pj.scripts).join(', ') : '(none)');
-  const deps = Object.assign({}, pj.dependencies || {}, pj.devDependencies || {});
-  const hasReactScripts = !!deps['react-scripts'];
-  const hasVite = !!deps['vite'] || !!pj.devDependencies?.vite;
-  console.log('  detected deps (react-scripts):', hasReactScripts);
-  console.log('  detected deps (vite):', hasVite);
-  if (hasReactScripts) console.log('  Recommendation: This looks like Create React App (CRA). Keep index.html in public/ and do not add <script src="/src/..."> manually.');
-  if (hasVite) console.log('  Recommendation: This looks like Vite. Ensure index.html is at project root (not public/) and keep <script type="module" src="/src/main.jsx"> in that root index.html.');
+function safeExec(cmd) {
+  try { return child.execSync(cmd, { stdio: ['pipe', 'pipe', 'ignore'] }).toString().trim(); }
+  catch (e) { return null; }
 }
 
-const checks = [
-  'public/index.html',
-  'index.html',
-  'src/main.jsx',
-  'src/index.jsx',
-  'src/main.js',
-  'src/index.js',
-  'vite.config.js',
-  'webpack.config.js',
-  'public/manifest.json',
-  'public/favicon.ico',
-  'src/App.jsx',
-  'src/App.js'
-];
-
-console.log('\nPresence of common files:');
-checks.forEach((c) => console.log(`  ${c}:`, exists(c) ? 'FOUND' : 'missing'));
-
-console.log('\nQuick diagnosis heuristics:');
-if (exists('public/index.html') && !exists('index.html')) {
-  console.log('  - public/index.html present and root index.html missing -> typical CRA layout.');
-}
-if (exists('index.html') && !exists('public/index.html')) {
-  console.log('  - root index.html present and public/index.html missing -> typical Vite layout.');
-}
-if (!pj) {
-  console.log('  - Cannot determine bundler. Ensure package.json exists and contains either "react-scripts" (CRA) or "vite" or build/dev scripts.');
-} else if (!pj.scripts || (!pj.scripts.start && !pj.scripts.dev)) {
-  console.warn('  - package.json has no start/dev script. Run "npm install" and check project template.');
+function probe(port, timeout = 1500) {
+  return new Promise((resolve) => {
+    const req = http.get({ hostname: '127.0.0.1', port, path: '/', timeout }, (res) => {
+      resolve({ ok: true, statusCode: res.statusCode, port });
+      res.destroy();
+    });
+    req.on('error', () => resolve({ ok: false, port }));
+    req.on('timeout', () => { req.destroy(); resolve({ ok: false, port }); });
+  });
 }
 
-console.log('\nNext steps (manual):');
-console.log('  1) Open a terminal in the project root and run the dev server:');
-console.log('       - For CRA: npm start');
-console.log('       - For Vite: npm run dev');
-console.log('  2) Open browser devtools (F12) -> Console and Network tab. Copy any red errors here.');
-console.log('  3) If React fails to mount: ensure src/main.jsx or src/index.jsx renders to #root and that your index.html location matches your bundler (see recommendations above).');
+(async function main() {
+  console.log('Project diagnostics for:', root);
+  console.log('----------------------------------------------------');
 
-console.log('\nIf you want, paste the full output of this script and any console errors here and I will tell you the exact lines to change.');
+  // Node / npm
+  const nodeV = safeExec('node -v');
+  const npmV = safeExec('npm -v');
+  console.log('Environment:');
+  console.log('  node:', nodeV || 'NOT FOUND');
+  console.log('  npm :', npmV || 'NOT FOUND');
+  if (!nodeV) {
+    console.warn('  -> Install Node.js (includes npm) from https://nodejs.org and retry.');
+  }
+
+  // File tree summary (brief)
+  const all = listAll(root);
+  console.log('\nTop entries (project root):');
+  all.slice(0, 40).forEach((f) => console.log('  -', f));
+  if (all.length > 40) console.log('  ... (truncated)');
+
+  // package.json
+  const pj = readJSON('package.json');
+  if (!pj) {
+    console.warn('\npackage.json: NOT FOUND. You must run this from the project root or create package.json (npm init).');
+  } else {
+    console.log('\npackage.json found. Scripts snapshot:');
+    console.log('  scripts:', pj.scripts ? Object.keys(pj.scripts).join(', ') : '(none)');
+    const deps = Object.assign({}, pj.dependencies || {}, pj.devDependencies || {});
+    const hasReactScripts = !!deps['react-scripts'];
+    const hasVite = !!deps['vite'] || !!pj.devDependencies?.vite;
+    console.log('  detected deps (react-scripts):', hasReactScripts);
+    console.log('  detected deps (vite):', hasVite);
+    if (hasReactScripts) console.log('  Recommendation: CRA detected -> use "npm start". Keep public/index.html as-is.');
+    if (hasVite) console.log('  Recommendation: Vite detected -> use "npm run dev". Ensure index.html is at project root.');
+  }
+
+  // Common files
+  const checks = [
+    'public/index.html',
+    'index.html',
+    'src/main.jsx',
+    'src/index.jsx',
+    'src/main.js',
+    'src/index.js',
+    'vite.config.js',
+    'webpack.config.js',
+    'public/manifest.json',
+    'public/favicon.ico',
+    'src/App.jsx',
+    'src/App.js'
+  ];
+  console.log('\nPresence of common files:');
+  checks.forEach((c) => console.log(`  ${c}:`, exists(c) ? 'FOUND' : 'missing'));
+
+  // Dev server probe
+  console.log('\nProbing local dev-server ports (127.0.0.1:3000 and :5173)...');
+  const probes = await Promise.all([probe(3000), probe(5173)]);
+  probes.forEach(p => {
+    if (p.ok) console.log(`  port ${p.port}: responded (status ${p.statusCode}) -> dev server running`);
+    else console.log(`  port ${p.port}: no response -> server not running on this port`);
+  });
+
+  // Quick actionable summary for Windows desktop
+  console.log('\nQuick actions to run on Windows (from project root):');
+  if (!nodeV) {
+    console.log('  1) Install Node.js from https://nodejs.org');
+    console.log('  2) Re-open terminal and verify: node -v && npm -v');
+    return;
+  }
+
+  console.log('  1) Install dependencies:');
+  console.log('       npm install');
+  if (pj && pj.scripts) {
+    if (pj.scripts.start) console.log('  2) Start (CRA / other): npm start');
+    if (pj.scripts.dev) console.log('  2) Start (Vite/other): npm run dev');
+    if (!pj.scripts.start && !pj.scripts.dev) console.log('  2) No start/dev script found in package.json — inspect package.json and add an appropriate script.');
+  } else {
+    console.log('  2) No scripts in package.json — inspect package.json and add "start" or "dev".');
+  }
+
+  console.log('\nIf server does not start or probes above show no server:');
+  console.log('  - Run the start command and watch the terminal for build errors.');
+  console.log('  - Open browser DevTools (F12) -> Console and Network. Copy any red errors and paste here.');
+  console.log('  - If you see "PORT in use" or permission errors, reboot or change the dev server port.');
+  console.log('\nPaste the full output of this script and any terminal/browser errors here and I will provide exact file edits.');
+})();
