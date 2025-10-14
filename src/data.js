@@ -2,7 +2,7 @@ export const projects = [
   {
     title: "Portfolio Website",
     description: "A personal portfolio built with React and styled-components.",
-    link: "https://your-demo-link.com",
+    link: "https://my-portfolios.vercel.app/",
   },
   {
     title: "Pomodoro Timer",
