@@ -6,7 +6,8 @@ export default function Projects() {
     <section className="projects-page">
       <h1>My Projects</h1>
       <p>Here are some of the projects I’ve worked on recently:</p>
-
+      <div className="star-container"><div className="stars">
+        </div></div>
       <div className="projects-grid">
         {projects.map((project, index) => (
           <ProjectCard
