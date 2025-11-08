@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer className="footer">
-      <p>© {new Date().getFullYear()} Your Name. All rights reserved.</p>
+      <p>© {new Date().getFullYear()} Beata. All rights reserved.</p>
       
       <div className="footer-links">
         <a href="https://github.com/beata-teck" target="_blank" rel="noreferrer">
