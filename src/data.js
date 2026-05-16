@@ -14,7 +14,7 @@ export const projects = [
     description: "A simple CRUD app for managing daily tasks.",
     link: "https://task-manager-qohl.vercel.app/",
   },
-    {
+  {
     title: "Lunara Studio",
     description: "lunara studio is a website that offers a variety of design services, including logo design, branding, and web design. The website is built with pure html and css.",
     link: "https://lunara-studios.vercel.app",
@@ -24,12 +24,12 @@ export const projects = [
     description: "A simple website that showcases things i love. The website is built with pure html and css.",
     link: "https://what-i-love-eight.vercel.app/",
   },
-   {
+  {
     title: "tic tac toe",
     description: "A classic tic-tac-toe game built with javascript, html and css.",
     link: "https://tic-tac-toe-six-kappa-16.vercel.app/",
   },
-{
+  {
     title: "Todo List",
     description: "A simple todo list app to keep track of tasks.",
     link: "https://todo-list-project-gamma-dusky.vercel.app/",
@@ -37,16 +37,16 @@ export const projects = [
   {
     title: "Study Group Finder",
     description: "A platform to help students find and organize study groups.",
-    link: "#",
+    link: "https://study-group-and-event.vercel.app/",
   },
   {
     title: "Client Success Portal",
     description: "A portal for managing client success and communication.",
-    link: "#",
+    link: "https://github.com/beata-teck/client-success-portal",
   },
   {
     title: "Study AI (In Progress)",
     description: "An AI-powered student productivity web application.",
-    link: "#",
+    link: "https://github.com/beata-teck/bata-s-studyAI",
   },
 ];
