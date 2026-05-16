@@ -34,4 +34,19 @@ export const projects = [
     description: "A simple todo list app to keep track of tasks.",
     link: "https://todo-list-project-gamma-dusky.vercel.app/",
   },
+  {
+    title: "Study Group Finder",
+    description: "A platform to help students find and organize study groups.",
+    link: "#",
+  },
+  {
+    title: "Client Success Portal",
+    description: "A portal for managing client success and communication.",
+    link: "#",
+  },
+  {
+    title: "Study AI (In Progress)",
+    description: "An AI-powered student productivity web application.",
+    link: "#",
+  },
 ];
